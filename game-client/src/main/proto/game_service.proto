@@ -14,15 +14,18 @@ message JoinMatchRequest {
   string player_name = 1;
   string difficulty = 2;
   bool ranked = 3;
+  int32 starting_hp = 4;
 }
 
 message JoinMatchResponse {
   string match_id = 1;
   string player_name = 2;
   string opponent_name = 3;
-  string difficulty = 4;
-  bool ranked = 5;
-  string message = 6;
+  string message = 4;
+  // TODO 5: Add a server-created summary field here.
+  string summary = 5;
+  int32 player_hp = 6;
+  int32 opponent_hp = 7;
 }
 
 message PlayMatchRequest {
@@ -34,8 +37,11 @@ message MatchResultResponse {
   string match_id = 1;
   string winner_name = 2;
   string loser_name = 3;
-  bool player_won = 4;
-  string message = 5;
+  string message = 4;
+  bool player_won = 5;
+
+  int32 player_hp = 6;
+  int32 opponent_hp = 7;
 }
 
 message MatchHistoryRequest {

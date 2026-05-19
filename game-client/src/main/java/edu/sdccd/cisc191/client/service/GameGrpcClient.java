@@ -1,9 +1,5 @@
 package edu.sdccd.cisc191.client.service;
 
-import edu.sdccd.cisc191.client.dto.JoinMatchWebRequest;
-import edu.sdccd.cisc191.client.dto.JoinMatchWebResponse;
-import edu.sdccd.cisc191.client.dto.MatchHistoryWebResponse;
-import edu.sdccd.cisc191.client.dto.PlayMatchWebResponse;
 import edu.sdccd.cisc191.grpc.GameServiceGrpc;
 import edu.sdccd.cisc191.grpc.JoinMatchRequest;
 import edu.sdccd.cisc191.grpc.JoinMatchResponse;
@@ -13,20 +9,14 @@ import edu.sdccd.cisc191.grpc.MatchResultResponse;
 import edu.sdccd.cisc191.grpc.PlayMatchRequest;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import javafx.concurrent.Task;
 
-@Service
 public class GameGrpcClient {
 
     private final ManagedChannel channel;
     private final GameServiceGrpc.GameServiceBlockingStub blockingStub;
 
-    public GameGrpcClient(
-            @Value("${game.grpc.host:localhost}") String host,
-            @Value("${game.grpc.port:50051}") int port
-    ) {
+    public GameGrpcClient(String host, int port) {
         this.channel = ManagedChannelBuilder
                 .forAddress(host, port)
                 .usePlaintext()
@@ -35,61 +25,77 @@ public class GameGrpcClient {
         this.blockingStub = GameServiceGrpc.newBlockingStub(channel);
     }
 
-    public JoinMatchWebResponse joinMatch(JoinMatchWebRequest webRequest) {
-        JoinMatchRequest request = JoinMatchRequest.newBuilder()
-                .setPlayerName(safe(webRequest.playerName(), "Player"))
-                .setDifficulty(safe(webRequest.difficulty(), "Normal"))
-                .setRanked(webRequest.ranked())
+    public Task<JoinMatchResponse> joinMatchTask(
+            String playerName,
+            String difficulty,
+            boolean ranked,
+            int startingHp
+    ) {
+        return new Task<>() {
+            @Override
+            protected JoinMatchResponse call() {
+                JoinMatchRequest request = buildJoinMatchRequest(
+                        playerName, difficulty, ranked, startingHp);
+
+                return blockingStub.joinMatch(request);
+            }
+        };
+    }
+
+    /**
+     * TODO 4: Complete this client-side gRPC helper, then use it from joinMatchTask.
+     *
+     * Requirements:
+     * - Build and return a JoinMatchRequest.
+     * - Use "Player" when playerName is null or blank.
+     * - Use "Normal" when difficulty is null or blank.
+     * - Trim playerName and difficulty.
+     * - Preserve the ranked value.
+     */
+    public static JoinMatchRequest buildJoinMatchRequest(String playerName, String difficulty, boolean ranked, int startingHp) {
+        if(playerName == null || playerName.isBlank()) playerName = "Player";
+
+        if(difficulty == null || difficulty.isBlank()) difficulty = "Normal";
+
+
+        return JoinMatchRequest.newBuilder()
+                .setPlayerName(playerName.trim())
+                .setDifficulty(difficulty.trim())
+                .setRanked(ranked)
+                .setStartingHp(startingHp)
                 .build();
-
-        JoinMatchResponse response = blockingStub.joinMatch(request);
-
-        return new JoinMatchWebResponse(
-                response.getMatchId(),
-                response.getPlayerName(),
-                response.getOpponentName(),
-                response.getDifficulty(),
-                response.getRanked(),
-                response.getMessage()
-        );
     }
 
-    public PlayMatchWebResponse playMatch(String matchId, String playerName) {
-        PlayMatchRequest request = PlayMatchRequest.newBuilder()
-                .setMatchId(safe(matchId, ""))
-                .setPlayerName(safe(playerName, "Player"))
-                .build();
+    public Task<MatchResultResponse> playMatchTask(
+            String matchId,
+            String playerName
+    ) {
+        return new Task<>() {
+            @Override
+            protected MatchResultResponse call() {
+                PlayMatchRequest request = PlayMatchRequest.newBuilder()
+                        .setMatchId(matchId)
+                        .setPlayerName(playerName)
+                        .build();
 
-        MatchResultResponse response = blockingStub.playMatch(request);
-
-        return new PlayMatchWebResponse(
-                response.getMatchId(),
-                response.getWinnerName(),
-                response.getLoserName(),
-                response.getPlayerWon(),
-                response.getMessage()
-        );
+                return blockingStub.playMatch(request);
+            }
+        };
     }
 
-    public MatchHistoryWebResponse loadHistory(String playerName) {
-        MatchHistoryRequest request = MatchHistoryRequest.newBuilder()
-                .setPlayerName(safe(playerName, "Player"))
-                .build();
+    public Task<MatchHistoryResponse> loadMatchHistoryTask(String playerName) {
+        return new Task<>() {
+            @Override
+            protected MatchHistoryResponse call() {
+                MatchHistoryRequest request = MatchHistoryRequest.newBuilder()
+                        .setPlayerName(playerName)
+                        .build();
 
-        MatchHistoryResponse response = blockingStub.loadMatchHistory(request);
-
-        return new MatchHistoryWebResponse(response.getMatchesList());
+                return blockingStub.loadMatchHistory(request);
+            }
+        };
     }
 
-    private String safe(String value, String defaultValue) {
-        if (value == null || value.isBlank()) {
-            return defaultValue;
-        }
-
-        return value.trim();
-    }
-
-    @PreDestroy
     public void shutdown() {
         channel.shutdown();
     }
