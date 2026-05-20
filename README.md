@@ -34,51 +34,46 @@ file-based H2 database
 | `game-server` | Spring Boot 3 app hosting the gRPC service and persisting matches |
 | `game-client` | Spring Boot 3 web app serving HTML/CSS/JS and proxying calls to gRPC |
 
-## Build
 
-From the project root:
+---
+
+## Build the Project
+
+From the root folder:
 
 ```bash
 mvn clean install
 ```
 
-This generates Java classes from:
+---
 
-```text
-game-server/src/main/proto/game_service.proto
-game-client/src/main/proto/game_service.proto
-```
+## Run the gRPC Server
 
-## Run the Spring Boot 3 gRPC Server
-
-Terminal 1:
+Open a terminal:
 
 ```bash
 cd game-server
-mvn spring-boot:run
+mvn exec:java
 ```
 
 Expected output:
 
 ```text
-Spring Boot 3 gRPC Game Server started on port 50051
+1v1 gRPC Game Server started on port 50051
 ```
 
-## Run the Spring Boot 3 Web Client
+Leave this terminal running.
 
-Terminal 2:
+---
+
+## Run the JavaFX Client
+
+Open a second terminal:
 
 ```bash
 cd game-client
-mvn spring-boot:run
+mvn javafx:run
 ```
-
-Open:
-
-```text
-http://localhost:9091
-```
-
 ## Persistence
 
 The server persists matches using Spring Data JPA and H2.

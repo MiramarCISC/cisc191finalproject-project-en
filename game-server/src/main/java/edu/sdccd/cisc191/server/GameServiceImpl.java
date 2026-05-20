@@ -56,7 +56,7 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
                 .setPlayerName(match.playerName())
                 .setOpponentName(match.opponentName())
                 .setMessage("Joined " + match.matchType() + " match " + matchId
-                        + " on " + difficulty + " difficulty. Click Play Match to let the server choose a winner.")
+                        + " on " + difficulty + " difficulty. Click Play Round to start the match.")
                 .setSummary(buildJoinSummary(
                         match.matchId, match.playerName,
                         match.opponentName, match.difficulty,
@@ -67,20 +67,6 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         responseObserver.onCompleted();
     }
 
-    /**
-     * TODO 6: Complete this server-side summary helper, then use it in JoinMatchResponse
-     * after adding the new summary field to the .proto file.
-     *
-     * Expected format:
-     * Match match-001: Ada vs Bot (Hard, ranked)
-     *
-     * Requirements:
-     * - Use "No match" when matchId is null or blank.
-     * - Use "Player" when playerName is null or blank.
-     * - Use "Bot" when opponentName is null or blank.
-     * - Use "Normal" when difficulty is null or blank.
-     * - Use "ranked" when ranked is true, otherwise "casual".
-     */
     public static String buildJoinSummary(
             String matchId,
             String playerName,
@@ -199,6 +185,7 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
             MatchHistoryRequest request,
             StreamObserver<MatchHistoryResponse> responseObserver
     ) {
+
         String playerName = request.getPlayerName().isBlank()
                 ? "Player"
                 : request.getPlayerName();
@@ -217,20 +204,6 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         return statistics;
     }
 
-//    private record ServerMatch(
-//            String matchId,
-//            String playerName,
-//            String opponentName,
-//            String difficulty,
-//            boolean ranked,
-//            int playerHp,
-//            int opponentHp
-//
-//    ) {
-//        private String matchType() {
-//            return ranked ? "ranked" : "casual";
-//        }
-//    }
 
     private static class ServerMatch {
 

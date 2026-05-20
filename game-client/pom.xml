@@ -8,7 +8,7 @@
 
     <parent>
         <groupId>edu.sdccd.cisc191</groupId>
-        <artifactId>Mod7</artifactId>
+        <artifactId>final-project</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 

@@ -74,6 +74,15 @@ public class GameController {
         boolean ranked = rankedMatchCheckBox.isSelected();
         int startingHp = getStartingHp();
 
+        int opponentHp;
+        if (difficulty.equals("Hard")){
+             opponentHp = (int)(startingHp * 1.5);
+        } else if (difficulty.equals("Easy")){
+             opponentHp = (int)(startingHp * 0.75);
+        } else {
+            opponentHp = startingHp;
+        }
+
         statusLabel.setText("Status: Joining match...");
         matchLog.appendText(buildJoinLogMessage(playerName, difficulty, ranked) + "\n");
 
@@ -91,7 +100,7 @@ public class GameController {
             match.getPlayer().setName(response.getPlayerName());
             match.getOpponent().setName(response.getOpponentName());
             match.getPlayer().setHp(startingHp);
-            match.getOpponent().setHp(startingHp);
+            match.getOpponent().setHp(opponentHp);
             match.setMatchOver(false);
             match.setWinnerName("");
 
@@ -232,19 +241,6 @@ public class GameController {
         });
     }
 
-    /**
-     * TODO 3: Complete this controller helper.
-     *
-     * Return exactly:
-     * Joining ranked match as Ada on Hard difficulty...
-     * or:
-     * Joining casual match as Ada on Normal difficulty...
-     *
-     * Requirements:
-     * - Use "Player" when playerName is null or blank.
-     * - Use "Normal" when difficulty is null or blank.
-     * - Trim playerName and difficulty.
-     */
     public static String buildJoinLogMessage(String playerName, String difficulty, boolean ranked) {
 
         String isRanked = "casual";
@@ -263,15 +259,6 @@ public class GameController {
                 isRanked, playerName.trim(), difficulty.trim());
     }
 
-    /**
-     * TODO 8: Complete this helper so UI updates are safe from any thread.
-     *
-     * JavaFX controls must be changed on the JavaFX Application Thread.
-     * Requirements:
-     * - If action is null, do nothing.
-     * - If already on the JavaFX Application Thread, run action immediately.
-     * - Otherwise, schedule it with Platform.runLater(action).
-     */
     public static void runOnFxThread(Runnable action) {
         if (action != null) {
             if (Platform.isFxApplicationThread()) {
