@@ -29,20 +29,21 @@ public class GameGrpcClient {
             String playerName,
             String difficulty,
             boolean ranked,
-            int startingHp
+            int startingHp,
+            int opponentHp
     ) {
         return new Task<>() {
             @Override
             protected JoinMatchResponse call() {
                 JoinMatchRequest request = buildJoinMatchRequest(
-                        playerName, difficulty, ranked, startingHp);
+                        playerName, difficulty, ranked, startingHp, opponentHp);
 
                 return blockingStub.joinMatch(request);
             }
         };
     }
 
-    public static JoinMatchRequest buildJoinMatchRequest(String playerName, String difficulty, boolean ranked, int startingHp) {
+    public static JoinMatchRequest buildJoinMatchRequest(String playerName, String difficulty, boolean ranked, int startingHp, int opponentHp) {
         if(playerName == null || playerName.isBlank()) playerName = "Player";
 
         if(difficulty == null || difficulty.isBlank()) difficulty = "Normal";
@@ -53,6 +54,7 @@ public class GameGrpcClient {
                 .setDifficulty(difficulty.trim())
                 .setRanked(ranked)
                 .setStartingHp(startingHp)
+                .setOpponentHp(opponentHp)
                 .build();
     }
 

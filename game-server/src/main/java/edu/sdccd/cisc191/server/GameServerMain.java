@@ -1,5 +1,6 @@
 package edu.sdccd.cisc191.server;
 
+import edu.sdccd.cisc191.server.util.DatabaseInitializer;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -10,6 +11,9 @@ public class GameServerMain {
     private static final int PORT = 50051;
 
     public static void main(String[] args) throws IOException, InterruptedException {
+
+        DatabaseInitializer.initialize();
+
         Server server = ServerBuilder
                 .forPort(PORT)
                 .addService(new GameServiceImpl())

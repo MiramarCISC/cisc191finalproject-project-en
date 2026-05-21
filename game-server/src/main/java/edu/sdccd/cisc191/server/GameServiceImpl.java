@@ -7,6 +7,8 @@ import edu.sdccd.cisc191.grpc.MatchHistoryRequest;
 import edu.sdccd.cisc191.grpc.MatchHistoryResponse;
 import edu.sdccd.cisc191.grpc.MatchResultResponse;
 import edu.sdccd.cisc191.grpc.PlayMatchRequest;
+import edu.sdccd.cisc191.server.repository.MatchRepository;
+import edu.sdccd.cisc191.server.repository.PlayerRepository;
 import io.grpc.stub.StreamObserver;
 
 import java.util.Map;
@@ -19,6 +21,8 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
     private final Map<String, ServerMatch> matches = new ConcurrentHashMap<>();
     private final MatchStatistics statistics = new MatchStatistics();
     private final Random random = new Random();
+    private  final MatchRepository matchRep = new MatchRepository();
+    private  final PlayerRepository playerRep = new PlayerRepository();
 
     @Override
     public void joinMatch(
@@ -37,7 +41,9 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         String matchId = UUID.randomUUID().toString();
 
         int startingHp = request.getStartingHp();
-        //int startingHp = 100;
+        int opponentHp = request.getOpponentHp();
+
+
         ServerMatch match = new ServerMatch(
                 matchId,
                 playerName,
@@ -45,7 +51,7 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
                 difficulty,
                 ranked,
                 startingHp,
-                startingHp
+                opponentHp
         );
 
         matches.put(matchId, match);
@@ -55,6 +61,8 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
                 .setMatchId(matchId)
                 .setPlayerName(match.playerName())
                 .setOpponentName(match.opponentName())
+                .setPlayerHp(match.playerHp())
+                .setOpponentHp(match.opponentHp())
                 .setMessage("Joined " + match.matchType() + " match " + matchId
                         + " on " + difficulty + " difficulty. Click Play Round to start the match.")
                 .setSummary(buildJoinSummary(
@@ -166,6 +174,24 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
                     + match.difficulty() + " match.";
         }
 
+        playerRep.savePlayer(match.playerName());
+
+        if (!winner.isBlank()) {
+
+            matchRep.saveMatch(
+                    match.matchId(),
+                    match.playerName(),
+                    match.opponentName(),
+                    winner,
+                    match.difficulty(),
+                    match.ranked(),
+                    match.playerHp(),
+                    match.opponentHp()
+            );
+
+        }
+
+
         MatchResultResponse response = MatchResultResponse.newBuilder()
                 .setMatchId(match.matchId())
                 .setWinnerName(winner)
@@ -190,11 +216,14 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
                 ? "Player"
                 : request.getPlayerName();
 
-        MatchHistoryResponse response = MatchHistoryResponse.newBuilder()
-                .addMatches(playerName + " vs Bot: Win")
-                .addMatches(playerName + " vs Bot: Loss")
-                .addMatches(playerName + " vs Bot: Win")
-                .build();
+        MatchHistoryResponse.Builder builder =
+                MatchHistoryResponse.newBuilder();
+
+        for (String match : matchRep.getMatchHistory(playerName)) {
+            builder.addMatches(match);
+        }
+
+        MatchHistoryResponse response = builder.build();
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();

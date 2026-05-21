@@ -90,7 +90,8 @@ public class GameController {
                 playerName,
                 difficulty,
                 ranked,
-                startingHp
+                startingHp,
+                opponentHp
         );
 
         task.setOnSucceeded(event -> {
@@ -99,8 +100,8 @@ public class GameController {
             match.setMatchId(response.getMatchId());
             match.getPlayer().setName(response.getPlayerName());
             match.getOpponent().setName(response.getOpponentName());
-            match.getPlayer().setHp(startingHp);
-            match.getOpponent().setHp(opponentHp);
+            match.getPlayer().setHp(response.getPlayerHp());
+            match.getOpponent().setHp(response.getOpponentHp());
             match.setMatchOver(false);
             match.setWinnerName("");
 

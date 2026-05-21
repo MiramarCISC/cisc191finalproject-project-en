@@ -7,7 +7,7 @@ public class Player {
 
     public Player(String name) {
         setName(name);
-        setHp(50);
+        setHp(100);
     }
 
     public String getName() {
