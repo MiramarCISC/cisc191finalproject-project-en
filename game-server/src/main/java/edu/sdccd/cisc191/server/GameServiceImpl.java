@@ -23,6 +23,7 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
     private final Random random = new Random();
     private  final MatchRepository matchRep = new MatchRepository();
     private  final PlayerRepository playerRep = new PlayerRepository();
+    private DamageCalculator calculator;
 
     @Override
     public void joinMatch(
@@ -125,8 +126,22 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         }
 
 
-        int playerDamage = random.nextInt(25) + 1;
-        int botDamage = random.nextInt(25) + 1;
+        switch (match.difficulty()){
+            case "Easy":
+                calculator = new EasyDamageCalculator();
+                break;
+
+            case "Normal":
+                calculator = new NormalDamageCalculator();
+                break;
+
+            case "Hard":
+                calculator = new HardDamageCalculator();
+                break;
+        }
+
+        int playerDamage = calculator.calculateDamage();
+        int botDamage = calculator.calculateDamage();
 
         match.setPlayerHp(match.playerHp() - botDamage);
         match.setOpponentHp(match.opponentHp() - playerDamage);
