@@ -59,9 +59,9 @@ mvn exec:java
 Expected output:
 
 ```text
+Database initialized.
 1v1 gRPC Game Server started on port 50051
 ```
-
 Leave this terminal running.
 
 ---

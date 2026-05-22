@@ -178,7 +178,7 @@ public class GameController {
 
             matchLog.appendText("Match history:\n");
             for (String line : response.getMatchesList()) {
-                matchLog.appendText("- " + line + "\n");
+                matchLog.appendText( line + "\n");
 
             }
         });
