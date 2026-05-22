@@ -1,5 +1,9 @@
 package edu.sdccd.cisc191.server;
 
+import edu.sdccd.cisc191.client.model.enemy.Enemy;
+import edu.sdccd.cisc191.client.model.enemy.Ghoul;
+import edu.sdccd.cisc191.client.model.enemy.Goblin;
+import edu.sdccd.cisc191.client.model.enemy.Ork;
 import edu.sdccd.cisc191.grpc.GameServiceGrpc;
 import edu.sdccd.cisc191.grpc.JoinMatchRequest;
 import edu.sdccd.cisc191.grpc.JoinMatchResponse;
@@ -44,17 +48,32 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         String matchId = UUID.randomUUID().toString();
 
         int startingHp = request.getStartingHp();
-        int opponentHp = request.getOpponentHp();
+
+        Enemy enemy;
+
+        switch (difficulty) {
+            case "Easy":
+                enemy = new Goblin(startingHp);
+                break;
+
+            case "Hard":
+                enemy = new Ork(startingHp);
+                break;
+
+            default:
+                enemy = new Ghoul(startingHp);
+                break;
+        }
 
 
         ServerMatch match = new ServerMatch(
                 matchId,
                 playerName,
-                "Bot (" + difficulty + ")",
+                enemy.getName(),
                 difficulty,
                 ranked,
                 startingHp,
-                opponentHp
+                enemy.getHp()
         );
 
         matches.put(matchId, match);
