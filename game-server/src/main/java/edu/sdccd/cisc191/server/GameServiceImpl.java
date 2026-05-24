@@ -1,5 +1,9 @@
 package edu.sdccd.cisc191.server;
 
+import edu.sdccd.cisc191.client.model.enemy.Enemy;
+import edu.sdccd.cisc191.client.model.enemy.Ghoul;
+import edu.sdccd.cisc191.client.model.enemy.Goblin;
+import edu.sdccd.cisc191.client.model.enemy.Ork;
 import edu.sdccd.cisc191.grpc.GameServiceGrpc;
 import edu.sdccd.cisc191.grpc.JoinMatchRequest;
 import edu.sdccd.cisc191.grpc.JoinMatchResponse;
@@ -7,10 +11,12 @@ import edu.sdccd.cisc191.grpc.MatchHistoryRequest;
 import edu.sdccd.cisc191.grpc.MatchHistoryResponse;
 import edu.sdccd.cisc191.grpc.MatchResultResponse;
 import edu.sdccd.cisc191.grpc.PlayMatchRequest;
+import edu.sdccd.cisc191.server.damage.*;
 import edu.sdccd.cisc191.server.repository.MatchRepository;
 import edu.sdccd.cisc191.server.repository.PlayerRepository;
 import io.grpc.stub.StreamObserver;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -42,17 +48,32 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         String matchId = UUID.randomUUID().toString();
 
         int startingHp = request.getStartingHp();
-        int opponentHp = request.getOpponentHp();
+
+        Enemy enemy;
+
+        switch (difficulty) {
+            case "Easy":
+                enemy = new Goblin(startingHp);
+                break;
+
+            case "Hard":
+                enemy = new Ork(startingHp);
+                break;
+
+            default:
+                enemy = new Ghoul(startingHp);
+                break;
+        }
 
 
         ServerMatch match = new ServerMatch(
                 matchId,
                 playerName,
-                "Bot (" + difficulty + ")",
+                enemy.getName(),
                 difficulty,
                 ranked,
                 startingHp,
-                opponentHp
+                enemy.getHp()
         );
 
         matches.put(matchId, match);
@@ -140,8 +161,12 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
                 break;
         }
 
-        int playerDamage = calculator.calculateDamage();
         int botDamage = calculator.calculateDamage();
+
+        DamageResult playerAttack =
+                calcCritDamage(calculator.calculateDamage());
+
+        int playerDamage = playerAttack.getDamage();
 
         match.setPlayerHp(match.playerHp() - botDamage);
         match.setOpponentHp(match.opponentHp() - playerDamage);
@@ -161,11 +186,13 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         String winner = "";
         String loser = "";
 
-        if (match.playerHp() <= 0) {
+        if (match.playerHp() <= 0 && match.opponentHp<=0) {
+            winner = "Draw";
+            loser = match.playerName();
+        } else if (match.playerHp() <= 0) {
             winner = match.opponentName();
             loser = match.playerName();
-        }
-        else if (match.opponentHp() <= 0) {
+        } else if (match.opponentHp() <= 0) {
             winner = match.playerName();
             loser = match.opponentName();
             playerWon = true;
@@ -174,8 +201,15 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         String message;
 
         if (winner.isBlank()) {
+
+            String playerCritText = "";
+
+            if (playerAttack.isCriticalHit()) {
+                playerCritText = " CRITICAL HIT!";
+            }
+
             message = match.playerName() + " dealt " + playerDamage
-                    + " damage. "
+                    + " damage." + playerCritText + "\n"
                     + match.opponentName() + " dealt " + botDamage
                     + " damage.\n"
                     + match.playerName() + " HP: " + match.playerHp()
@@ -234,11 +268,23 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         MatchHistoryResponse.Builder builder =
                 MatchHistoryResponse.newBuilder();
 
-        for (String match : matchRep.getMatchHistory(playerName)) {
-            builder.addMatches(match);
-        }
+        List<String> history = matchRep.getMatchHistory(playerName);
+
+        long wins = history
+                .stream()
+                .filter(match -> match.contains("Win"))
+                .count();
+
+
+        appendHistory(history, 0, builder);
+
+
+        builder.addMatches("Total Matches: " + history.size());
+        builder.addMatches("Matches Won: " + wins);
+        builder.addMatches("Matches Lost " + (history.size() - wins));
 
         MatchHistoryResponse response = builder.build();
+
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
@@ -293,5 +339,37 @@ public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
         public String matchType() {
             return ranked ? "ranked" : "casual";
         }
+    }
+
+    private void appendHistory(
+            List<String> matches,
+            int index,
+            MatchHistoryResponse.Builder builder
+    ) {
+        if (index >= matches.size()) {
+            return;
+        }
+
+        builder.addMatches("- " + matches.get(index));
+
+        appendHistory(matches, index + 1, builder);
+    }
+
+    private DamageResult calcCritDamage(int baseDamage) {
+
+        int critChance = random.nextInt(20) + 1;
+
+        if (critChance == 20) {
+
+            return new DamageResult(
+                    baseDamage * 2,
+                    true
+            );
+        }
+
+        return new DamageResult(
+                baseDamage,
+                false
+        );
     }
 }

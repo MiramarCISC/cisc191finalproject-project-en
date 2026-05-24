@@ -1,5 +1,7 @@
 package edu.sdccd.cisc191.client.controller;
 
+import edu.sdccd.cisc191.client.model.enemy.Enemy;
+import edu.sdccd.cisc191.client.model.enemy.EnemyFactory;
 import edu.sdccd.cisc191.grpc.JoinMatchResponse;
 import edu.sdccd.cisc191.grpc.MatchHistoryResponse;
 import edu.sdccd.cisc191.grpc.MatchResultResponse;
@@ -74,14 +76,7 @@ public class GameController {
         boolean ranked = rankedMatchCheckBox.isSelected();
         int startingHp = getStartingHp();
 
-        int opponentHp;
-        if (difficulty.equals("Hard")){
-             opponentHp = (int)(startingHp * 1.5);
-        } else if (difficulty.equals("Easy")){
-             opponentHp = (int)(startingHp * 0.75);
-        } else {
-            opponentHp = startingHp;
-        }
+        Enemy enemy = EnemyFactory.create(difficulty, startingHp);
 
         statusLabel.setText("Status: Joining match...");
         matchLog.appendText(buildJoinLogMessage(playerName, difficulty, ranked) + "\n");
@@ -91,7 +86,7 @@ public class GameController {
                 difficulty,
                 ranked,
                 startingHp,
-                opponentHp
+                enemy.getHp()
         );
 
         task.setOnSucceeded(event -> {
@@ -178,7 +173,7 @@ public class GameController {
 
             matchLog.appendText("Match history:\n");
             for (String line : response.getMatchesList()) {
-                matchLog.appendText("- " + line + "\n");
+                matchLog.appendText( line + "\n");
 
             }
         });

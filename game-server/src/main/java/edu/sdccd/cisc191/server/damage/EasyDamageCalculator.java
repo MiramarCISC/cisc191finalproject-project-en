@@ -1,9 +1,9 @@
-package edu.sdccd.cisc191.server;
+package edu.sdccd.cisc191.server.damage;
 
 import java.util.Random;
 
 public class EasyDamageCalculator implements DamageCalculator {
-    private Random random = new Random();
+    private final Random random = new Random();
 
     @Override
     public int calculateDamage() {
