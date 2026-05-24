@@ -172,10 +172,14 @@ public class GameController {
             MatchHistoryResponse response = task.getValue();
 
             matchLog.appendText("Match history:\n");
-            for (String line : response.getMatchesList()) {
-                matchLog.appendText( line + "\n");
 
+            String[] historyArray =
+                    response.getMatchesList().toArray(new String[0]);
+
+            for (String line : historyArray) {
+                matchLog.appendText(line + "\n");
             }
+
         });
 
         task.setOnFailed(event -> {
