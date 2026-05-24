@@ -4,6 +4,7 @@ import edu.sdccd.cisc191.grpc.*;
 import edu.sdccd.cisc191.server.damage.DamageCalculator;
 import edu.sdccd.cisc191.server.damage.HardDamageCalculator;
 import edu.sdccd.cisc191.server.repository.MatchRepository;
+import edu.sdccd.cisc191.server.repository.PlayerRepository;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Test;
 
@@ -16,9 +17,12 @@ class GameGrpcServiceTest {
     // Module 1
     @Test
     void MatchHistoryStoresResultsTest() {
-        MatchRepository repo = new MatchRepository();
+        MatchRepository repoMatch = new MatchRepository();
+        PlayerRepository repoPlayer = new PlayerRepository();
 
-        repo.saveMatch(
+        repoPlayer.savePlayer("Adele");
+
+        repoMatch.saveMatch(
                 "1" ,
                         "Adele" ,
                         "Bot" ,
@@ -29,7 +33,7 @@ class GameGrpcServiceTest {
                         0
         );
 
-        List<String> history = repo.getMatchHistory("Adele");
+        List<String> history = repoMatch.getMatchHistory("Adele");
 
         assertFalse(history.isEmpty());
     }
