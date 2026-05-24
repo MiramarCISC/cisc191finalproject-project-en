@@ -33,12 +33,9 @@ class GameClientApplicationTest {
                 .matcher(source)
                 .replaceAll("");
 
-        assertTrue(sourceWithoutComments.contains("Platform.isFxApplicationThread()"),
-                "TODO 8: Check Platform.isFxApplicationThread() before updating JavaFX controls.");
-        assertTrue(sourceWithoutComments.contains("Platform.runLater(action)"),
-                "TODO 8: Use Platform.runLater(action) when code is not already on the JavaFX Application Thread.");
-        assertTrue(sourceWithoutComments.contains("runOnFxThread(() ->"),
-                "TODO 8: Use runOnFxThread for JavaFX control updates, such as updateView().");
+        assertTrue(sourceWithoutComments.contains("Platform.isFxApplicationThread()"));
+        assertTrue(sourceWithoutComments.contains("Platform.runLater(action)"));
+        assertTrue(sourceWithoutComments.contains("runOnFxThread(() ->"));
     }
 
 }

@@ -1,7 +1,8 @@
 package edu.sdccd.cisc191.server;
 
-import edu.sdccd.cisc191.grpc.MatchHistoryRequest;
-import edu.sdccd.cisc191.grpc.MatchHistoryResponse;
+import edu.sdccd.cisc191.grpc.*;
+import edu.sdccd.cisc191.server.damage.DamageCalculator;
+import edu.sdccd.cisc191.server.damage.HardDamageCalculator;
 import edu.sdccd.cisc191.server.repository.MatchRepository;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 
 class GameGrpcServiceTest {
 
@@ -73,5 +73,75 @@ class GameGrpcServiceTest {
     }
 
     // module 6
-    
+    @Test
+    void Module6Test() {
+
+        GameServiceImpl service = new GameServiceImpl();
+
+        final MatchHistoryResponse[] historyHolder = new MatchHistoryResponse[1];
+
+        JoinMatchRequest joinRequest = JoinMatchRequest.newBuilder()
+                .setPlayerName("Adele")
+                .setDifficulty("Normal")
+                .setStartingHp(100)
+                .setOpponentHp(100)
+                .build();
+
+        service.joinMatch(joinRequest, new io.grpc.stub.StreamObserver<JoinMatchResponse>() {
+
+            @Override
+            public void onNext(JoinMatchResponse value) {}
+
+            @Override
+            public void onError(Throwable t) {
+                fail();
+            }
+
+            @Override
+            public void onCompleted() {}
+        });
+
+        PlayMatchRequest playRequest = PlayMatchRequest.newBuilder()
+                .setMatchId("1") // safe fallback
+                .build();
+
+        service.playMatch(playRequest, new io.grpc.stub.StreamObserver<MatchResultResponse>() {
+
+            @Override
+            public void onNext(MatchResultResponse value) {}
+
+            @Override
+            public void onError(Throwable t) {
+                fail();
+            }
+
+            @Override
+            public void onCompleted() {}
+        });
+
+        MatchHistoryRequest historyRequest = MatchHistoryRequest.newBuilder()
+                .setPlayerName("Adele")
+                .build();
+
+        service.loadMatchHistory(historyRequest, new io.grpc.stub.StreamObserver<MatchHistoryResponse>() {
+
+            @Override
+            public void onNext(MatchHistoryResponse value) {
+                historyHolder[0] = value;
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                fail();
+            }
+
+            @Override
+            public void onCompleted() {}
+        });
+
+        assertNotNull(historyHolder[0]);
+    }
+
+
 }
+
