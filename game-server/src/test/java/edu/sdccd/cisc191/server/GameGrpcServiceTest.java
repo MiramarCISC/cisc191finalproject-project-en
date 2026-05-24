@@ -1,5 +1,8 @@
 package edu.sdccd.cisc191.server;
 
+import edu.sdccd.cisc191.client.model.Player;
+import edu.sdccd.cisc191.client.model.enemy.Enemy;
+import edu.sdccd.cisc191.client.model.enemy.Ghoul;
 import edu.sdccd.cisc191.grpc.*;
 import edu.sdccd.cisc191.server.damage.DamageCalculator;
 import edu.sdccd.cisc191.server.damage.HardDamageCalculator;
@@ -48,6 +51,20 @@ class GameGrpcServiceTest {
     }
 
     // module 3
+    @Test
+    void PolymorphismTest() {
+        Enemy e = new Ghoul(100);
+
+        assertEquals(100, e.getHp());
+    }
+
+    @Test
+    void equalsTest() {
+        Enemy e1 = new Ghoul(100);
+        Enemy e2 = new Ghoul(100);
+
+        assertEquals(e1.getHp(), e2.getHp());
+    }
 
     // module 5
     @Test
