@@ -90,7 +90,6 @@ mvn test
 ## Reflection
 
 ### What We're most proud of
-- We are very proud of how we put all the 7 modules together to make it into one cohesive fully-functioning app that uses every module topic in the proper order to work through the game seamlessly. 
-
+- We are very proud of how we put all 7 modules together to make it into one cohesive, fully-functioning app that uses every module topic in the proper order to work through the game seamlessly. We are also especially proud of the JDBC database that stores the players and matches.
 ### What We would improve with more time
-- If we had more time, we would improve the JavaFX UI design to have more options like attacking, blocking, and powers so it would feel more like a game rather than just a computer logic fight. 
+- If we had more time, we would improve the JavaFX UI design to have more options like attacking, blocking, and powers so it would feel more like a game rather than just a computer logic fight. We would also increase the ways the different difficulties change the opponents and matches by adding other stats such as defense.
