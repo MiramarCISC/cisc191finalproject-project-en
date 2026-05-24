@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.sdccd.cisc191.client.controller.GameController">
+
+    <top>
+        <VBox spacing="8" style="-fx-padding: 12; -fx-background-color: #eef5ff;">
+            <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="JavaFX 1v1 Fighter" />
+
+            <Label fx:id="statusLabel" text="Status: Not connected" />
+
+            <HBox spacing="10">
+                <Label text="Player:" />
+                <TextField fx:id="playerNameField" prefWidth="180" promptText="Enter player name" />
+
+                <CheckBox fx:id="rankedMatchCheckBox" text="Ranked" />
+
+                <Label fx:id="matchSummaryLabel" text="Summary: No match" />
+
+                <Label text="Difficulty:" />
+                <ComboBox fx:id="difficultyComboBox" prefWidth="120" />
+            </HBox>
+            <HBox>
+                <TextField fx:id="hpField" prefWidth="150" promptText="Enter Hp">
+               <HBox.margin>
+                  <Insets right="50.0" />
+               </HBox.margin></TextField>
+                <Label fx:id="playerHpLabel"  text="No Match">
+               <HBox.margin>
+                  <Insets right="50.0" />
+               </HBox.margin></Label>
+                <Label fx:id="opponentHpLabel" text="No Match" />
+
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TextArea fx:id="matchLog" editable="false" promptText="Match events will appear here..." wrapText="true" />
+    </center>
+
+    <bottom>
+        <VBox spacing="10" style="-fx-padding: 12; -fx-background-color: #f8f8f8;">
+
+            <HBox spacing="20">
+                <Label fx:id="playerLabel" text="Player: Player" />
+                <Label fx:id="opponentLabel" text="Opponent: Opponent" />
+                <Label fx:id="winnerLabel" text="Winner: TBD" />
+            </HBox>
+
+            <HBox spacing="10">
+                <Button onAction="#handleJoinMatch" text="Join Match" />
+
+                <Button onAction="#handlePlayMatch" text="Play Round" />
+
+                <Button onAction="#handleLoadHistory" text="Load Match History" />
+
+                <Button onAction="#handleResetLocalView" text="Reset Local View" />
+            </HBox>
+
+        </VBox>
+    </bottom>
+
+</BorderPane>

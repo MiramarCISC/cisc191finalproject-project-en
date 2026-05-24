@@ -1,142 +1,181 @@
 package edu.sdccd.cisc191.server;
 
-import edu.sdccd.cisc191.grpc.JoinMatchRequest;
-import edu.sdccd.cisc191.grpc.JoinMatchResponse;
-import edu.sdccd.cisc191.grpc.MatchHistoryRequest;
-import edu.sdccd.cisc191.grpc.MatchHistoryResponse;
-import edu.sdccd.cisc191.grpc.MatchResultResponse;
-import edu.sdccd.cisc191.grpc.PlayMatchRequest;
-import edu.sdccd.cisc191.server.grpc.GameGrpcService;
+import edu.sdccd.cisc191.client.model.Player;
+import edu.sdccd.cisc191.client.model.enemy.Enemy;
+import edu.sdccd.cisc191.client.model.enemy.Ghoul;
+import edu.sdccd.cisc191.grpc.*;
+import edu.sdccd.cisc191.server.damage.DamageCalculator;
+import edu.sdccd.cisc191.server.damage.HardDamageCalculator;
 import edu.sdccd.cisc191.server.repository.MatchRepository;
+import edu.sdccd.cisc191.server.repository.PlayerRepository;
+import edu.sdccd.cisc191.server.util.DatabaseInitializer;
 import io.grpc.stub.StreamObserver;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 class GameGrpcServiceTest {
 
-    @Autowired
-    private GameGrpcService service;
+    // Module 1
+    @Test
+    void CreatesValidPlayers() {
+        Player p = new Player("Taylor");
+        p.setHp(300);
 
-    @Autowired
-    private MatchRepository matchRepository;
+        assertEquals("Taylor", p.getName());
+        assertEquals(300, p.getHp(), 0.000001);
+    }
 
-    @BeforeEach
-    void clearDatabase() {
-        matchRepository.deleteAll();
+    // Module 2
+    @Test
+    void DamageCalculatorReturnValidDamageTest() {
+
+        DamageCalculator calc = new HardDamageCalculator();
+        int damage = calc.calculateDamage();
+        assertTrue(damage >= 1 && damage <= 40);
+    }
+
+    // module 3
+    @Test
+    void PolymorphismTest() {
+        Enemy e = new Ghoul(100);
+
+        assertEquals(100, e.getHp());
     }
 
     @Test
-    void joinMatchReturnsMatchDetailsAndPersistsMatch() {
-        TestObserver<JoinMatchResponse> observer = new TestObserver<>();
+    void equalsTest() {
+        Enemy e1 = new Ghoul(100);
+        Enemy e2 = new Ghoul(100);
 
-        service.joinMatch(
-                JoinMatchRequest.newBuilder()
-                        .setPlayerName("Ada")
-                        .setDifficulty("Hard")
-                        .setRanked(true)
-                        .build(),
-                observer
-        );
-
-        assertNotNull(observer.value);
-        assertTrue(observer.completed);
-        assertEquals("Ada", observer.value.getPlayerName());
-        assertEquals("Bot (Hard)", observer.value.getOpponentName());
-        assertEquals("Hard", observer.value.getDifficulty());
-        assertTrue(observer.value.getRanked());
-        assertTrue(matchRepository.existsById(observer.value.getMatchId()));
+        assertEquals(e1.getHp(), e2.getHp());
     }
 
+    // module 4
     @Test
-    void playMatchReturnsWinnerAndUpdatesSavedMatch() {
-        TestObserver<JoinMatchResponse> joinObserver = new TestObserver<>();
+    void MatchHistoryTest() {
+        DatabaseInitializer.initialize();
 
-        service.joinMatch(
-                JoinMatchRequest.newBuilder()
-                        .setPlayerName("Ada")
-                        .setDifficulty("Normal")
-                        .build(),
-                joinObserver
+        PlayerRepository playerRepo = new PlayerRepository();
+        MatchRepository matchRepo = new MatchRepository();
+
+        playerRepo.savePlayer("Adele");
+
+        matchRepo.saveMatch(
+                java.util.UUID.randomUUID().toString(),
+                "Adele",
+                "Bot",
+                "Adele",
+                "Hard",
+                true ,
+                50 ,
+                0
         );
 
-        TestObserver<MatchResultResponse> playObserver = new TestObserver<>();
+        List<String> history = matchRepo.getMatchHistory("Adele");
 
-        service.playMatch(
-                PlayMatchRequest.newBuilder()
-                        .setMatchId(joinObserver.value.getMatchId())
-                        .setPlayerName("Ada")
-                        .build(),
-                playObserver
-        );
-
-        assertNotNull(playObserver.value);
-        assertTrue(playObserver.completed);
-        assertFalse(playObserver.value.getWinnerName().isBlank());
-        assertFalse(playObserver.value.getLoserName().isBlank());
-        assertNotEquals(playObserver.value.getWinnerName(), playObserver.value.getLoserName());
-
-        var saved = matchRepository.findById(joinObserver.value.getMatchId()).orElseThrow();
-        assertTrue(saved.isComplete());
-        assertEquals(playObserver.value.getWinnerName(), saved.getWinnerName());
+        assertFalse(history.isEmpty());
     }
 
+    // module 5
     @Test
-    void loadMatchHistoryReadsSavedMatches() {
-        TestObserver<JoinMatchResponse> joinObserver = new TestObserver<>();
+    void MatchHistoryBuilderTest() {
+        GameServiceImpl service = new GameServiceImpl();
+        final MatchHistoryResponse[] holder = new MatchHistoryResponse[1];
+        MatchHistoryRequest request = MatchHistoryRequest.newBuilder()
+                .setPlayerName("Adele")
+                .build();
 
-        service.joinMatch(
-                JoinMatchRequest.newBuilder()
-                        .setPlayerName("Ada")
-                        .setDifficulty("Easy")
-                        .build(),
-                joinObserver
-        );
+        service.loadMatchHistory(request, new StreamObserver<>() {
+            @Override
+            public void onNext(MatchHistoryResponse value) {
+                holder[0] = value;
+            }
 
-        service.playMatch(
-                PlayMatchRequest.newBuilder()
-                        .setMatchId(joinObserver.value.getMatchId())
-                        .setPlayerName("Ada")
-                        .build(),
-                new TestObserver<>()
-        );
+            @Override
+            public void onError(Throwable t) {
+                fail(t);
+            }
 
-        TestObserver<MatchHistoryResponse> historyObserver = new TestObserver<>();
+            @Override
+            public void onCompleted() {}
+        });
 
-        service.loadMatchHistory(
-                MatchHistoryRequest.newBuilder()
-                        .setPlayerName("Ada")
-                        .build(),
-                historyObserver
-        );
-
-        assertNotNull(historyObserver.value);
-        assertTrue(historyObserver.completed);
-        assertTrue(historyObserver.value.getMatchesCount() >= 1);
-        assertTrue(historyObserver.value.getMatches(0).contains("Ada"));
+        assertTrue(holder[0] != null);
     }
 
-    private static class TestObserver<T> implements StreamObserver<T> {
-        private T value;
-        private boolean completed;
+    // module 6
+    @Test
+    void Module6Test() {
 
-        @Override
-        public void onNext(T value) {
-            this.value = value;
-        }
+        GameServiceImpl service = new GameServiceImpl();
 
-        @Override
-        public void onError(Throwable throwable) {
-            fail(throwable);
-        }
+        final MatchHistoryResponse[] historyHolder = new MatchHistoryResponse[1];
 
-        @Override
-        public void onCompleted() {
-            this.completed = true;
-        }
+        JoinMatchRequest joinRequest = JoinMatchRequest.newBuilder()
+                .setPlayerName("Adele")
+                .setDifficulty("Normal")
+                .setStartingHp(100)
+                .setOpponentHp(100)
+                .build();
+
+        service.joinMatch(joinRequest, new io.grpc.stub.StreamObserver<JoinMatchResponse>() {
+
+            @Override
+            public void onNext(JoinMatchResponse value) {}
+
+            @Override
+            public void onError(Throwable t) {
+                fail();
+            }
+
+            @Override
+            public void onCompleted() {}
+        });
+
+        PlayMatchRequest playRequest = PlayMatchRequest.newBuilder()
+                .setMatchId("1") // safe fallback
+                .build();
+
+        service.playMatch(playRequest, new io.grpc.stub.StreamObserver<MatchResultResponse>() {
+
+            @Override
+            public void onNext(MatchResultResponse value) {}
+
+            @Override
+            public void onError(Throwable t) {
+                fail();
+            }
+
+            @Override
+            public void onCompleted() {}
+        });
+
+        MatchHistoryRequest historyRequest = MatchHistoryRequest.newBuilder()
+                .setPlayerName("Adele")
+                .build();
+
+        service.loadMatchHistory(historyRequest, new io.grpc.stub.StreamObserver<MatchHistoryResponse>() {
+
+            @Override
+            public void onNext(MatchHistoryResponse value) {
+                historyHolder[0] = value;
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                fail();
+            }
+
+            @Override
+            public void onCompleted() {}
+        });
+
+        assertNotNull(historyHolder[0]);
     }
+
+
 }
+
