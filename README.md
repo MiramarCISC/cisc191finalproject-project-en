@@ -5,7 +5,7 @@
 
 This GitHub Classroom lab uses:
 
-Project EN is a multiplayer-style 1v1 battle game built using a Java backend and a JavaFX desktop client. The JavaFX client communicates with the game server using gRPC, and the server handles the game logic and stores match data with file based H2 database. 
+Project EN is a multiplayer-style 1v1 battle game built using a Java backend and a JavaFX desktop client. The JavaFX client communicates with the game server using gRPC, and the server handles the game logic and stores match data with file based JDBC database. 
 
 This project demonstrates layered backend architecture, service communication using gRPC, and persistent data storage. 
 
