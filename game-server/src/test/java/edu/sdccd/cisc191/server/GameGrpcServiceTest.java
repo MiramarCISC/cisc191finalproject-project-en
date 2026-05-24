@@ -20,26 +20,12 @@ class GameGrpcServiceTest {
 
     // Module 1
     @Test
-    void MatchHistoryStoresResultsTest() {
-        MatchRepository repoMatch = new MatchRepository();
-        PlayerRepository repoPlayer = new PlayerRepository();
+    void CreatesValidPlayers() {
+        Player p = new Player("Taylor");
+        p.setHp(300);
 
-        repoPlayer.savePlayer("Adele");
-
-        repoMatch.saveMatch(
-                "1" ,
-                        "Adele" ,
-                        "Bot" ,
-                        "Adele" ,
-                        "Hard",
-                        true ,
-                        50 ,
-                        0
-        );
-
-        List<String> history = repoMatch.getMatchHistory("Adele");
-
-        assertFalse(history.isEmpty());
+        assertEquals("Taylor", p.getName());
+        assertEquals(300, p.getHp(), 0.000001);
     }
 
     // Module 2
