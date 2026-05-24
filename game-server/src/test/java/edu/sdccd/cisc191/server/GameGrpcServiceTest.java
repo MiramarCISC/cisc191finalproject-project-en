@@ -8,6 +8,7 @@ import edu.sdccd.cisc191.server.damage.DamageCalculator;
 import edu.sdccd.cisc191.server.damage.HardDamageCalculator;
 import edu.sdccd.cisc191.server.repository.MatchRepository;
 import edu.sdccd.cisc191.server.repository.PlayerRepository;
+import edu.sdccd.cisc191.server.util.DatabaseInitializer;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Test;
 
@@ -64,6 +65,32 @@ class GameGrpcServiceTest {
         Enemy e2 = new Ghoul(100);
 
         assertEquals(e1.getHp(), e2.getHp());
+    }
+
+    // module 4
+    @Test
+    void MatchHistoryTest() {
+        DatabaseInitializer.initialize();
+
+        PlayerRepository playerRepo = new PlayerRepository();
+        MatchRepository matchRepo = new MatchRepository();
+
+        playerRepo.savePlayer("Adele");
+
+        matchRepo.saveMatch(
+                java.util.UUID.randomUUID().toString(),
+                "Adele",
+                "Bot",
+                "Adele",
+                "Hard",
+                true ,
+                50 ,
+                0
+        );
+
+        List<String> history = matchRepo.getMatchHistory("Adele");
+
+        assertFalse(history.isEmpty());
     }
 
     // module 5
