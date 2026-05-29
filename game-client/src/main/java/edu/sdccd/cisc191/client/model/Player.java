@@ -22,6 +22,7 @@ public class Player {
         }
     }
 
+    // add toString() method to make debugging/logging info easier
     public void setHp(int hp) {
         this.hp = Math.max(hp, 0);
     }

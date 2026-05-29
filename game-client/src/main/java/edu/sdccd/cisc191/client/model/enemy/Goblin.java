@@ -7,6 +7,7 @@ public class Goblin extends Enemy {
         this.name = "Goblin";
     }
 
+    // explain why goblins use 0.75 multiplier so others who look at it can understand
     @Override
     protected int calculateHp(int playerHp) {
         return (int)(playerHp * 0.75);

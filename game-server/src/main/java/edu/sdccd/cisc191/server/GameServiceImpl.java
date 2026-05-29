@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GameServiceImpl extends GameServiceGrpc.GameServiceImplBase {
 
+    // move repeated enemy creation log to EnemyFactory so it's easier to reuse & maintain
     private final Map<String, ServerMatch> matches = new ConcurrentHashMap<>();
     private final MatchStatistics statistics = new MatchStatistics();
     private final Random random = new Random();
