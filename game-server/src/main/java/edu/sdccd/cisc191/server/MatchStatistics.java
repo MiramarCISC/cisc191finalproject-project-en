@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MatchStatistics {
 
-
+    // consider adding more statistics methods (average score, total losses) to increase function
     private final AtomicInteger joinedMatchCount = new AtomicInteger(0);
     private final AtomicInteger completedMatchCount = new AtomicInteger(0);
 

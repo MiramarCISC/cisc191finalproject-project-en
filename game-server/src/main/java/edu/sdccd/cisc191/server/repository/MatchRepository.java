@@ -42,7 +42,7 @@ public class MatchRepository {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // consider replacing with logger so database error is easier to track
         }
     }
 
