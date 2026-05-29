@@ -1,7 +1,7 @@
 package edu.sdccd.cisc191.client.model;
 
-
 public class Player {
+
     private String name;
     private int hp;
 
@@ -26,7 +26,12 @@ public class Player {
         this.hp = Math.max(hp, 0);
     }
 
-    public int getHp () {
+    public int getHp() {
         return hp;
+    }
+
+    @Override
+    public String toString() {
+        return "Player{name='" + name + "', hp=" + hp + "}";
     }
 }
