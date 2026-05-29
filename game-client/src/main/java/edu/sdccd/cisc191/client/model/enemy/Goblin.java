@@ -9,6 +9,7 @@ public class Goblin extends Enemy {
 
     @Override
     protected int calculateHp(int playerHp) {
-        return (int)(playerHp * 0.75);
+        // Easy difficulty enemy has 75% of the player's HP
+        return (int) (playerHp * 0.75);
     }
 }
